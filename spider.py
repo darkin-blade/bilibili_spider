@@ -42,10 +42,10 @@ class Spider:
             for res_item in res_list['data']['list']:
                 print(res_item['title'], res_item['order'])
                 # 合并所有结果
-                self.results.update({res_item['title'], res_item['order']})
+                self.results.update({res_item['title']: res_item['order']})
     def save_result(self, filename):
         with open(filename, 'w') as f:
-            f.write(json.dumps(self.results, indent = 2))
+            f.write(json.dumps(self.results, indent = 2, ensure_ascii = False))
 
 if __name__ == '__main__':
     my_spider = Spider()
