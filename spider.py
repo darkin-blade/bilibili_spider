@@ -17,25 +17,37 @@ class Spider:
     'season_type=1&' + \
     'pagesize=50&' + \
     'type=1'
+    results = {}
     # order
     # 0: 追番, 1: 未知, 2: 播放数量, 3: 追番人数, 4: 最高评分, 5: 开播时间
     # sort
     # 0: 降序, 1: 升序
+    def format_request(self):
+        order = 5
+        sort = 1
+        page = 61
+        print(self.url.format(order, sort, page))
     def start_request(self):
         order = 5
         sort = 1
-        for page in [100]:
+        for page in range(40, 41):
             result = requests.get(self.url.format(order, sort, page))
             yield result
-    def save_result(self):
+    def get_result(self):
         for result in self.start_request():
             res_list = json.loads(result.text)
-            if ('list' not in result):
+            if ('list' not in res_list['data']):
                 print('break')
                 break
             for res_item in res_list['data']['list']:
                 print(res_item['title'], res_item['order'])
+                # 合并所有结果
+                self.results.update({res_item['title'], res_item['order']})
+    def save_result(self, filename):
+        with open(filename, 'w') as f:
+            f.write(json.dumps(self.results, indent = 2))
 
 if __name__ == '__main__':
     my_spider = Spider()
-    my_spider.save_result()
+    my_spider.get_result()
+    my_spider.save_result("tmp.json")
