@@ -30,17 +30,17 @@ class Spider:
     def start_request(self):
         order = 5
         sort = 1
-        for page in range(40, 41):
+        for page in range(1, 100):
             result = requests.get(self.url.format(order, sort, page))
             yield result
     def get_result(self):
         for result in self.start_request():
             res_list = json.loads(result.text)
             if ('list' not in res_list['data']):
-                print('break')
+                print('end')
                 break
             for res_item in res_list['data']['list']:
-                print(res_item['title'], res_item['order'])
+                # print(res_item['title'], res_item['order'])
                 # 合并所有结果
                 self.results.update({res_item['title']: res_item['order']})
     def save_result(self, filename):
