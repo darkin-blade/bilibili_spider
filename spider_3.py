@@ -10,17 +10,6 @@ class Spider_season:
     cursor = None
     db = None
 
-    def init_sql(self):
-        self.db = pymysql.connect(
-                host = 'localhost',
-                port = 3306, # 端口错误错误代码111
-                user = 'niabie',
-                passwd = None,
-                db = 'bilibili',
-                charset = 'utf8'
-                )
-        self.cursor = self.db.cursor()
-
     def send_request(self, season_id):
         # 获取aid
         url = 'https://api.bilibili.com/pgc/web/season/section?season_id={}'
@@ -77,6 +66,17 @@ class Spider_season:
                 print(item)
                 self.insert_sql(item)
 
+    def init_sql(self):
+        self.db = pymysql.connect(
+                host = 'localhost',
+                port = 3306, # 端口错误错误代码111
+                user = 'niabie',
+                passwd = None,
+                db = 'bilibili',
+                charset = 'utf8'
+                )
+        self.cursor = self.db.cursor()
+
     def insert_sql(self, item):
         if self.db == None:
             print("no database")
@@ -96,14 +96,18 @@ class Spider_season:
             )
         self.cursor.execute(cmd)
 
+def test(self, text):
+    print(text)
+
 if __name__ == '__main__':
     my_spider = Spider_season()
     my_spider.init_sql()
 
+    _thread.start_new_thread(test, ("thread", my_spider))
     for i in range(4):
         # my_spider.get_detail(i, 10)
         _thread.start_new_thread(my_spider.get_detail,
-                ("thread_{}".format(i), 1 + i * 10, 10))
+                ("thread_{}".format(i), my_spider, 1 + i * 10, 10))
         # 刷新数据库
         my_spider.db.commit()
 
