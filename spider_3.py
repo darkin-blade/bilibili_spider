@@ -6,6 +6,20 @@ import requests
 import time
 
 class Spider_season:
+    cursor = None
+    db = None
+
+    def init_sql(self):
+        self.db = pymysql.connect(
+                host = 'localhost',
+                port = 3306, # 端口错误错误代码111
+                user = 'niabie',
+                passwd = None,
+                db = 'bilibili',
+                charset = 'utf8'
+                )
+        self.cursor = self.db.cursor()
+
     def send_request(self, season_id):
         # 获取aid
         url = 'https://api.bilibili.com/pgc/web/season/section?season_id={}'
@@ -59,11 +73,12 @@ class Spider_season:
             view = self.get_view(aid) # 刷新aid, title
             item.update(view)
             print(item)
-            return item
-        else:
-            return None
+            insert_sql(item)
 
-    def insert_sql(self, cursor, item):
+    def insert_sql(self, item):
+        if self.db == None:
+            print("no database")
+            return
         cmd = 'insert into season (season_id, aid, title, p_year, p_month, p_day, c_year, c_month, c_day) values' + \
                 '({}, {}, \'{}\', {}, {}, {}, {}, {}, {});'
         cmd = cmd.format(
@@ -77,21 +92,17 @@ class Spider_season:
             item['c_month'],
             item['c_day']
             )
-        cursor.execute(cmd)
+        self.cursor.execute(cmd)
 
 if __name__ == '__main__':
     my_spider = Spider_season()
+    my_spider.insert_sql()
+
     for i in range(1, 10):
         my_spider.get_detail(i)
+        if i % 5 == 0:
+            # 刷新数据库
+            my_spider.db.commit()
 
-    db = pymysql.connect(
-            host = 'localhost',
-            port = 3306, # 端口错误错误代码111
-            user = 'niabie',
-            passwd = None,
-            db = 'bilibili',
-            charset = 'utf8'
-            )
-    cursor = db.cursor()
-    db.commit()
-    db.close()
+    my_spider.db.commit()
+    my_spider.db.close()
