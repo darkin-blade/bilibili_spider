@@ -9,6 +9,8 @@ import time
 class Spider_season:
     cursor = None
     db = None
+    results = [] # 所有结果
+    failed = [] # 失败的season_id
 
     def send_request(self, season_id):
         # 获取aid
@@ -49,11 +51,15 @@ class Spider_season:
 
     def get_detail(self, season_id, num = 1):
         # 获取详细信息
+        group = [] # 按组存放结果
         for i in range(num):
             result = self.send_request(season_id + i) # 爆搜season
             if result['code'] == 0: # 获取成功
-                # if 'main_section' not in result['result']:
+                if 'main_section' not in result['result']:
                     # TODO 异常情况
+                    print(result, season_id + i)
+                    self.failed.append(season_id + i)
+                    continue
                 aid = result['result']['main_section']['episodes'][0]['aid'] 
                 # TODO 获取aid
                 item = {
@@ -63,9 +69,9 @@ class Spider_season:
                         }
                 view = self.get_view(aid) # 刷新aid, title
                 item.update(view)
-                self.insert_sql(item)
                 print(item)
-        self.db.commit() # 按组更新数据库
+                group.append(item)
+        self.results.extend(group)
 
     def init_sql(self):
         self.db = pymysql.connect(
@@ -105,14 +111,18 @@ if __name__ == '__main__':
     my_spider.init_sql()
 
     threads = []
+    group_size = 100 # 每一个线程抓取的数量
     for i in range(4):
         t = threading.Thread(
                 target = my_spider.get_detail,
-                args = (1 + i * 10, 10))
-        threads.append(t) # 加入线程list
+                args = (i * group_size, group_size))
         t.start()
+        threads.append(t) # 加入线程list
         # 刷新数据库
     for t in threads:
         t.join()
+    for item in my_spider.results:
+        my_spider.insert_sql(item)
 
+    my_spider.db.commit()
     my_spider.db.close()
