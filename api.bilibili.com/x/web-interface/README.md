@@ -1,1 +1,3 @@
+- [archive](./archive/)
+
 - [search](./search/)
