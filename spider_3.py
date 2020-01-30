@@ -3,8 +3,8 @@
 import json
 import pymysql
 import requests
+import threading
 import time
-import _thread
 
 class Spider_season:
     cursor = None
@@ -63,8 +63,9 @@ class Spider_season:
                         }
                 view = self.get_view(aid) # 刷新aid, title
                 item.update(view)
-                print(item)
                 self.insert_sql(item)
+                print(item)
+        self.db.commit() # 按组更新数据库
 
     def init_sql(self):
         self.db = pymysql.connect(
@@ -103,13 +104,15 @@ if __name__ == '__main__':
     my_spider = Spider_season()
     my_spider.init_sql()
 
-    _thread.start_new_thread(test, ("thread", my_spider))
+    threads = []
     for i in range(4):
-        # my_spider.get_detail(i, 10)
-        _thread.start_new_thread(my_spider.get_detail,
-                ("thread_{}".format(i), my_spider, 1 + i * 10, 10))
+        t = threading.Thread(
+                target = my_spider.get_detail,
+                args = (1 + i * 10, 10))
+        threads.append(t) # 加入线程list
+        t.start()
         # 刷新数据库
-        my_spider.db.commit()
+    for t in threads:
+        t.join()
 
-    my_spider.db.commit()
     my_spider.db.close()
