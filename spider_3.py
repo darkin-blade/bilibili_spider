@@ -16,6 +16,7 @@ class Spider_season:
         # 获取aid
         url = 'https://api.bilibili.com/pgc/web/season/section?season_id={}'
         result = requests.get(url.format(season_id))
+        print(result)
         return json.loads(result.text)
 
     def get_view(self, aid):
@@ -112,7 +113,7 @@ if __name__ == '__main__':
 
     threads = []
     group_size = 100 # 每一个线程抓取的数量
-    for i in range(4):
+    for i in range(20):
         t = threading.Thread(
                 target = my_spider.get_detail,
                 args = (i * group_size, group_size))
@@ -126,3 +127,6 @@ if __name__ == '__main__':
 
     my_spider.db.commit()
     my_spider.db.close()
+
+    for f in my_spider.failed:
+        print(f)
