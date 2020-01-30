@@ -50,4 +50,31 @@ if __name__ == '__main__':
             db = 'bilibili',
             charset = 'utf8'
             )
-    print('success')
+    cursor = db.cursor()
+    test = {
+            "season_id": 0,
+            "aid": 0,
+            "title": "爱上对方就卡死了地方就是打卡了",
+            "p_year": 0,
+            "p_month": 0,
+            "p_day": 0,
+            "c_year": 0,
+            "c_month": 0,
+            "c_day": 0
+            }
+    cmd = 'insert into season (season_id, aid, title, p_year, p_month, p_day, c_year, c_month, c_day) values' + \
+            '({}, {}, \'{}\', {}, {}, {}, {}, {}, {});'
+    cmd = cmd.format(
+            test['season_id'], 
+            test['aid'],
+            test['title'],
+            test['p_year'],
+            test['p_month'],
+            test['p_day'],
+            test['c_year'],
+            test['c_month'],
+            test['c_day']
+            )
+    cursor.execute(cmd)
+    db.commit()
+    db.close()
