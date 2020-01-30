@@ -1,1 +1,3 @@
+- [coins](./coins/)
+
 - [stat](./stat/)
