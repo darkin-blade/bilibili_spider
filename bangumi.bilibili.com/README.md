@@ -1,5 +1,5 @@
-- [api](./api/README.md)
+- [api](./api/)
 
-- [media](./media/README.md)
+- [media](./media/)
 
-- [web_api](./web_api/README.md)
+- [web_api](./web_api/)

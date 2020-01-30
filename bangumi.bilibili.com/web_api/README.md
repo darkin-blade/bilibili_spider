@@ -1,1 +1,1 @@
-- [timeline_global](../timeline_global/README.md)
+- [timeline_global](../timeline_global/)
