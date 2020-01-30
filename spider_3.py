@@ -73,7 +73,7 @@ class Spider_season:
             view = self.get_view(aid) # 刷新aid, title
             item.update(view)
             print(item)
-            insert_sql(item)
+            self.insert_sql(item)
 
     def insert_sql(self, item):
         if self.db == None:
@@ -96,7 +96,7 @@ class Spider_season:
 
 if __name__ == '__main__':
     my_spider = Spider_season()
-    my_spider.insert_sql()
+    my_spider.init_sql()
 
     for i in range(1, 10):
         my_spider.get_detail(i)
