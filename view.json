@@ -1,32 +1,23 @@
-# 说明
-
-单个视频详情
-
-# 示例
-
-`https://api.bilibili.com/x/web-interface/view?aid=26086579&cid=44729889`
-
-```json
 {
     "code": 0,
     "message": "0",
     "ttl": 1,
     "data": {
         "bvid": "",
-        "aid": 26086579,
+        "aid": 30556671,
         "videos": 1,
         "tid": 33,
         "tname": "连载动画",
         "copyright": 2,
-        "pic": "http://i0.hdslb.com/bfs/archive/02856e3259806aa6f5a690c86d04d927fe4c8af0.jpg",
-        "title": "【7月】后街女孩 01【独家正版】",
-        "pubdate": 1530635400,
-        "ctime": 1530618549,
-        "desc": "#01",
+        "pic": "http://i1.hdslb.com/bfs/archive/7540c03d1b3e61da0dc14986d2b4f831a4479d75.jpg",
+        "title": "【7月】后街女孩 09【独家正版】",
+        "pubdate": 1535473800,
+        "ctime": 1535460257,
+        "desc": "#09",
         "state": 0,
         "attribute": 77635,
         "duration": 1406,
-        "redirect_url": "http://www.bilibili.com/bangumi/play/ep232169/",
+        "redirect_url": "http://www.bilibili.com/bangumi/play/ep232177/",
         "rights": {
             "bp": 1,
             "elec": 0,
@@ -44,24 +35,24 @@
         "owner": {
             "mid": 928123,
             "name": "哔哩哔哩番剧",
-            "face": "http://i0.hdslb.com/bfs/face/60a9153609998b04301dc5b8ed44c41b537a2268.jpg"
+            "face": "http://i2.hdslb.com/bfs/face/60a9153609998b04301dc5b8ed44c41b537a2268.jpg"
         },
         "stat": {
-            "aid": 26086579,
-            "view": 13069706,
-            "danmaku": 153827,
-            "reply": 24182,
-            "favorite": 2851,
-            "coin": 57517,
-            "share": 75814,
+            "aid": 30556671,
+            "view": 3248373,
+            "danmaku": 49911,
+            "reply": 5763,
+            "favorite": 68,
+            "coin": 12308,
+            "share": 3945,
             "now_rank": 0,
             "his_rank": 0,
-            "like": 4777,
+            "like": 1222,
             "dislike": 0,
             "evaluation": ""
         },
         "dynamic": "",
-        "cid": 44729889,
+        "cid": 53331296,
         "dimension": {
             "width": 0,
             "height": 0,
@@ -69,10 +60,10 @@
         },
         "no_cache": true,
         "pages": [{
-            "cid": 44729889,
+            "cid": 53331296,
             "page": 1,
             "from": "vupload",
-            "part": "BSG_Ep01_BIRIBIRI_0624",
+            "part": "BSG09_BIRIBIRI_0810",
             "duration": 1406,
             "vid": "",
             "weblink": "",
@@ -88,11 +79,3 @@
         }
     }
 }
-```
-
-# 参数
-
-- `aid`
-
-- `cid`
-(不确定)client?不重要
