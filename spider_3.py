@@ -4,6 +4,7 @@ import json
 import pymysql
 import requests
 import time
+import _thread
 
 class Spider_season:
     cursor = None
@@ -57,23 +58,24 @@ class Spider_season:
                 })
         return item
 
-    def get_detail(self, season_id):
+    def get_detail(self, season_id, num = 1):
         # 获取详细信息
-        result = self.send_request(season_id) # 爆搜season
-        if result['code'] == 0: # 获取成功
-            # if 'main_section' not in result['result']:
-                # TODO 异常情况
-            aid = result['result']['main_section']['episodes'][0]['aid'] 
-            # TODO 获取aid
-            item = {
-                    "season_id": season_id,
-                    "aid": aid,
-                    "title": "没有标题",
-                    }
-            view = self.get_view(aid) # 刷新aid, title
-            item.update(view)
-            print(item)
-            self.insert_sql(item)
+        for i in range(num):
+            result = self.send_request(season_id + i) # 爆搜season
+            if result['code'] == 0: # 获取成功
+                # if 'main_section' not in result['result']:
+                    # TODO 异常情况
+                aid = result['result']['main_section']['episodes'][0]['aid'] 
+                # TODO 获取aid
+                item = {
+                        "season_id": season_id + i,
+                        "aid": aid,
+                        "title": "没有标题",
+                        }
+                view = self.get_view(aid) # 刷新aid, title
+                item.update(view)
+                print(item)
+                self.insert_sql(item)
 
     def insert_sql(self, item):
         if self.db == None:
@@ -98,11 +100,12 @@ if __name__ == '__main__':
     my_spider = Spider_season()
     my_spider.init_sql()
 
-    for i in range(1, 10):
-        my_spider.get_detail(i)
-        if i % 5 == 0:
-            # 刷新数据库
-            my_spider.db.commit()
+    for i in range(4):
+        # my_spider.get_detail(i, 10)
+        _thread.start_new_thread(my_spider.get_detail,
+                ("thread_{}".format(i), 1 + i * 10, 10))
+        # 刷新数据库
+        my_spider.db.commit()
 
     my_spider.db.commit()
     my_spider.db.close()
