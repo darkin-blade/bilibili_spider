@@ -17,21 +17,8 @@ class Spider_season:
         url = 'https://api.bilibili.com/x/web-interface/view?aid={}'
         result = requests.get(url.format(aid))
         view = json.loads(result.text)
-        title = "NULL"
-        if 'data' not in view:
-            # 异常情况
-            title = "仅限港澳台"
-        else:
-            title = view['data']['title']
-        return {"aid": aid, "title": title}
-
-    def get_detail(self, season_id):
-        # 获取详细信息
-        result = self.send_request(season_id) # 爆搜season
         item = {
-                "season_id": season_id,
-                "aid": 0,
-                "title": "没有标题",
+                "title": "NULL",
                 "p_year": 0,
                 "p_month": 0,
                 "p_day": 0,
@@ -39,14 +26,42 @@ class Spider_season:
                 "c_month": 0,
                 "c_day": 0
                 }
+        if 'data' not in view:
+            # 异常情况
+            item['title'] = "仅限港澳台"
+        else:
+            pubdate = time.localtime(view['data']['pubdate'])
+            ctime = time.localtime(view['data']['ctime'])
+            item.update({
+                "title": view['data']['title'],
+                "p_year": pubdate.tm_year,
+                "p_month": pubdate.tm_mon,
+                "p_day": pubdate.tm_mday,
+                "c_year": ctime.tm_year,
+                "c_month": ctime.tm_mon,
+                "c_day": ctime.tm_mday
+                })
+        return item
+
+    def get_detail(self, season_id):
+        # 获取详细信息
+        result = self.send_request(season_id) # 爆搜season
         if result['code'] == 0: # 获取成功
             # if 'main_section' not in result['result']:
                 # TODO 异常情况
-            aid = result['result']['main_section']['episodes'][0]['aid'] # TODO 获取aid
+            aid = result['result']['main_section']['episodes'][0]['aid'] 
+            # TODO 获取aid
+            item = {
+                    "season_id": season_id,
+                    "aid": aid,
+                    "title": "没有标题",
+                    }
             view = self.get_view(aid) # 刷新aid, title
             item.update(view)
             print(item)
-        return item
+            return item
+        else:
+            return None
 
     def insert_sql(self, cursor, item):
         cmd = 'insert into season (season_id, aid, title, p_year, p_month, p_day, c_year, c_month, c_day) values' + \
