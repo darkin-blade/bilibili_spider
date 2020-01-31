@@ -19,6 +19,10 @@ insert into season (season_id, aid, title, p_year, p_month, p_day, c_year, c_mon
 select season_id, id, title, p_year, c_year from season
 order by p_year;
 
+select season_id, id, title, p_year, c_year from season
+where title like '%鲁路修%'
+order by p_year;
+
 create table if not exists failed(
 	season_id int not null,
 	aid int not null,
@@ -30,7 +34,7 @@ insert into failed (season_id, aid)
 	values
 	(3097, );
 
-create table if not exists empty(
+create table if not exists empty_id(
 	season_id int not null,
 	primary key ( season_id )
 );
