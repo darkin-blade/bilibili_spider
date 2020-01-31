@@ -11,6 +11,7 @@ class Spider_season:
     db = None
     results = [] # 所有结果
     failed = [] # 失败的season_id
+    empty = [] # 无效的season_id
 
     def send_request(self, season_id):
         # 获取aid
@@ -78,8 +79,15 @@ class Spider_season:
                         }
                 view = self.get_view(aid) # 刷新aid, title
                 item.update(view)
-                print(item)
+                # print(item)
                 group.append(item)
+            else:
+                self.empty.append({"season_id": season_id})
+            if (i % 20 == 0):
+                if result['code'] == 0:
+                    print('\033[1;32m%d\033[0m' % (season_id + i))
+                else:
+                    print('\033[34m%d\033[0m' % (season_id + i))
         self.results.extend(group)
 
     def init_sql(self):
@@ -114,13 +122,14 @@ class Spider_season:
         self.cursor.execute(cmd)
 
     def insert_failed(self, item):
+        # 记录获取失败的记录
         if self.db == None:
             print("no database")
             return
-        cmd = 'insert into failed (season_id, aid, id) values' + \
+        cmd = 'insert ignore into failed (season_id, aid, id) values' + \
                 '({}, {}, {});'
         cmd = cmd.format(
-            item['season_id'], 
+            item['season_id'],
             item['aid'],
             item['id']
             )
@@ -133,27 +142,33 @@ if __name__ == '__main__':
     my_spider = Spider_season()
     my_spider.init_sql()
 
-    threads = []
     group_size = 1000 # 每一个线程抓取的数量
-    for j in range(0, 7):
-        low = j * 5
-        high = low + 5
-        for i in range(low, high):
+    thread_num = 5 # 线程数量
+
+    for j in range(3, 7):
+        # 清空数据
+        threads = []
+        my_spider.results = []
+        my_spider.failed = []
+        my_spider.empty = []
+
+        low = j * thread_num
+        for i in range(low, low + thread_num):
             t = threading.Thread(
                     target = my_spider.get_detail,
                     args = (i * group_size, group_size))
             t.start()
             threads.append(t) # 加入线程list
-            # 刷新数据库
+
+        # 刷新数据库
         for t in threads:
             t.join()
+        print('start commit')
         for item in my_spider.results:
             my_spider.insert_season(item)
-
         for f in my_spider.failed: # 记录保存失败的数据
             my_spider.insert_failed(f)
-            print(f)
-
         my_spider.db.commit()
+        print('commit finish')
 
     my_spider.db.close()

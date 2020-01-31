@@ -1,4 +1,4 @@
-# 爆搜所有(包括下架)的番剧
+# 爆搜所有(包括下架)的番剧,存储为json格式
 
 import json
 import requests
