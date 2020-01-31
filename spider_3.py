@@ -9,6 +9,7 @@ import time
 class Spider_season:
     cursor = None
     db = None
+    threads = [] # 线程list
     results = [] # 所有结果
     failed = [] # 失败的season_id
     empty = [] # 无效的season_id
@@ -52,10 +53,13 @@ class Spider_season:
                 })
         return item
 
-    def get_detail(self, season_id, num = 1):
+    def get_detail(self, season_id, num = 1, upper = 100000):
         # 获取详细信息
         group = [] # 按组存放结果
         for i in range(num):
+            if (season_id + i > upper):
+                # 超出上界
+                break
             result = self.send_request(season_id + i) # 爆搜season
             if result['code'] == 0: # 获取成功
                 aid = 0
@@ -83,10 +87,10 @@ class Spider_season:
                 group.append(item)
             else:
                 self.empty.append({"season_id": season_id})
-            if (i % 20 == 0):
-                if result['code'] == 0:
-                    print('\033[1;32m%d\033[0m' % (season_id + i))
-                else:
+            if result['code'] == 0:
+                print('\033[1;32m%d\033[0m' % (season_id + i))
+            else:
+                if (i % 20 == 0):
                     print('\033[34m%d\033[0m' % (season_id + i))
         self.results.extend(group)
 
@@ -135,8 +139,48 @@ class Spider_season:
             )
         self.cursor.execute(cmd)
 
-def test(self, text):
-    print(text)
+    def start_request(self, low, high, thread_num = 1):
+        # 抓取 [low, high) 的数据
+        group_size = 200
+        thread_num = 5
+
+        total = high - low
+        if total > (group_size * thread_num):
+            # 使用多次循环
+            loop = total / (group_size * thread_num) + 1
+            self.threads = []
+            self.results = []
+            self.failed = []
+            self.empty = []
+        else if total > group_size:
+            # 使用多线程
+            for i in range(0, 5):
+                # TODO 限定上界
+                t = threading.Thread(
+                        target = my_spider.get_detail,
+                        args = (low + i * group_size, group_size, high))
+                t.start()
+                self.threads.append(t) # 加入线程list
+            for t in self.threads:
+                t.join()
+            self.start_commit()
+        else if total > 0:
+            # 使用单线程
+            self.get_detail(low, total)
+            self.start_commit()
+
+    def start_commit(self):
+        print('start commit')
+        for item in self.results:
+            self.insert_season(item)
+        for f in self.failed: # 记录保存失败的数据
+            self.insert_failed(f)
+        self.db.commit()
+        # 清空数据
+        self.results.clear()
+        self.failed.clear()
+        print('commit finish')
+
 
 if __name__ == '__main__':
     my_spider = Spider_season()
