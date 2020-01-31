@@ -16,7 +16,8 @@ class Spider_season:
         # 获取aid
         url = 'https://api.bilibili.com/pgc/web/season/section?season_id={}'
         result = requests.get(url.format(season_id))
-        print(result)
+        # print(result)
+        # TODO 被封杀
         return json.loads(result.text)
 
     def get_view(self, aid):
@@ -56,16 +57,22 @@ class Spider_season:
         for i in range(num):
             result = self.send_request(season_id + i) # 爆搜season
             if result['code'] == 0: # 获取成功
-                if 'main_section' not in result['result']:
-                    # TODO 异常情况
+                aid = 0
+                ep_id = 0 # id 是关键字
+                if 'main_section' in result['result']:
+                    # TODO
+                    aid = result['result']['main_section']['episodes'][0]['aid'] 
+                    ep_id = result['result']['main_section']['episodes'][0]['id']
+                else:
+                    # TODO 没有版权
                     print(result, season_id + i)
                     self.failed.append(season_id + i)
                     continue
-                aid = result['result']['main_section']['episodes'][0]['aid'] 
                 # TODO 获取aid
                 item = {
                         "season_id": season_id + i,
                         "aid": aid,
+                        "id": ep_id,
                         "title": "没有标题",
                         }
                 view = self.get_view(aid) # 刷新aid, title
@@ -88,6 +95,10 @@ class Spider_season:
     def insert_sql(self, item):
         if self.db == None:
             print("no database")
+            return
+        if "'" in item['title']:
+            # TODO 转义字符
+            print(item)
             return
         cmd = 'insert into season (season_id, aid, title, p_year, p_month, p_day, c_year, c_month, c_day) values' + \
                 '({}, {}, \'{}\', {}, {}, {}, {}, {}, {});'
@@ -112,8 +123,8 @@ if __name__ == '__main__':
     my_spider.init_sql()
 
     threads = []
-    group_size = 100 # 每一个线程抓取的数量
-    for i in range(20):
+    group_size = 1000 # 每一个线程抓取的数量
+    for i in range(0, 5):
         t = threading.Thread(
                 target = my_spider.get_detail,
                 args = (i * group_size, group_size))
