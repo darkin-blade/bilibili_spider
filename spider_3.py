@@ -68,7 +68,6 @@ class Spider_season:
                     print(result, season_id + i)
                     self.failed.append(season_id + i)
                     continue
-                # TODO 获取aid
                 item = {
                         "season_id": season_id + i,
                         "aid": aid,
@@ -96,16 +95,17 @@ class Spider_season:
         if self.db == None:
             print("no database")
             return
-        if "'" in item['title']:
-            # TODO 转义字符
-            print(item)
-            return
-        cmd = 'insert into season (season_id, aid, title, p_year, p_month, p_day, c_year, c_month, c_day) values' + \
-                '({}, {}, \'{}\', {}, {}, {}, {}, {}, {});'
+        # if "'" in item['title']:
+        #     # TODO 转义字符
+        #     print(item)
+        #     return
+        cmd = 'insert into season (season_id, aid, id, title, p_year, p_month, p_day, c_year, c_month, c_day) values' + \
+                '({}, {}, {}, \'{}\', {}, {}, {}, {}, {}, {});'
         cmd = cmd.format(
             item['season_id'], 
             item['aid'],
-            item['title'],
+            item['id'],
+            item['title'].replace("'", "''").replace("\\", ""),
             item['p_year'],
             item['p_month'],
             item['p_day'],
@@ -113,6 +113,7 @@ class Spider_season:
             item['c_month'],
             item['c_day']
             )
+        print(cmd)
         self.cursor.execute(cmd)
 
 def test(self, text):
@@ -123,8 +124,8 @@ if __name__ == '__main__':
     my_spider.init_sql()
 
     threads = []
-    group_size = 1000 # 每一个线程抓取的数量
-    for i in range(0, 5):
+    group_size = 1 # 每一个线程抓取的数量
+    for i in range(3795, 3796):
         t = threading.Thread(
                 target = my_spider.get_detail,
                 args = (i * group_size, group_size))
