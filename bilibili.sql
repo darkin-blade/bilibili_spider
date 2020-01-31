@@ -30,4 +30,4 @@ insert into failed (season_id, aid)
 	(1308, ),
 	(3407, ),
 	(2894, ),
-	(9166, );
+	(1966, );
