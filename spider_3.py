@@ -13,6 +13,7 @@ class Spider_season:
     results = [] # 所有结果
     failed = [] # 失败的season_id
     empty = [] # 无效的season_id
+    log = [] # 确保没有遗漏
 
     def send_request(self, season_id):
         # 获取aid
@@ -57,10 +58,12 @@ class Spider_season:
         # 获取详细信息
         group = [] # 按组存放结果
         for i in range(num):
-            if (season_id + i > upper):
+            if (season_id + i >= upper):
                 # 超出上界
                 break
             result = self.send_request(season_id + i) # 爆搜season
+            # 添加记录
+            self.log.append(season_id + i)
             if result['code'] == 0: # 获取成功
                 aid = 0
                 ep_id = 0 # id 是关键字
@@ -69,6 +72,7 @@ class Spider_season:
                     ep_id = result['result']['main_section']['episodes'][0]['id']
                 else:
                     # TODO 没有版权
+                    # TODO 只有预告,暂未上映
                     self.failed.append({
                         "season_id": season_id + i,
                         "aid": aid,
@@ -139,7 +143,7 @@ class Spider_season:
             )
         self.cursor.execute(cmd)
 
-    def start_request(self, low, high, thread_num = 1):
+    def start_request(self, low, high):
         # 抓取 [low, high) 的数据
         group_size = 200
         thread_num = 5
@@ -147,8 +151,9 @@ class Spider_season:
         total = high - low
         if total > (group_size * thread_num):
             # 使用多次循环
-            loop = total / (group_size * thread_num) + 1
+            loop = int(total / (group_size * thread_num) + 1)
             for j in range(loop):
+                print('loop', j)
                 for i in range(0, 5):
                     # TODO 限定上界
                     t = threading.Thread(
@@ -158,6 +163,7 @@ class Spider_season:
                     self.threads.append(t) # 加入线程list
                 for t in self.threads:
                     t.join()
+                    print(t, 'finished')
                 self.threads.clear() # 清空所有线程
                 self.start_commit()
         elif total > group_size:
@@ -171,12 +177,17 @@ class Spider_season:
                 self.threads.append(t) # 加入线程list
             for t in self.threads:
                 t.join()
+                print(t, 'finished')
             self.threads.clear() # 清空所有线程
             self.start_commit()
         elif total > 0:
             # 使用单线程
             self.get_detail(low, total)
             self.start_commit()
+        # 输出所有遗漏的season
+        for i in range(low, high):
+            if i not in self.log:
+                print('\033[1;31m%d\033[0m' % (i))
 
     def start_commit(self):
         print('start commit')
@@ -195,33 +206,6 @@ if __name__ == '__main__':
     my_spider = Spider_season()
     my_spider.init_sql()
 
-    group_size = 1000 # 每一个线程抓取的数量
-    thread_num = 5 # 线程数量
-
-    for j in range(7, 11):
-        # 清空数据
-        threads = []
-        my_spider.results = []
-        my_spider.failed = []
-        my_spider.empty = []
-
-        low = j * thread_num
-        for i in range(low, low + thread_num):
-            t = threading.Thread(
-                    target = my_spider.get_detail,
-                    args = (i * group_size, group_size))
-            t.start()
-            threads.append(t) # 加入线程list
-
-        # 刷新数据库
-        for t in threads:
-            t.join()
-        print('start commit')
-        for item in my_spider.results:
-            my_spider.insert_season(item)
-        for f in my_spider.failed: # 记录保存失败的数据
-            my_spider.insert_failed(f)
-        my_spider.db.commit()
-        print('commit finish')
+    my_spider.start_request(24000, 30000)
 
     my_spider.db.close()

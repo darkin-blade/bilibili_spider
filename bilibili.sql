@@ -38,3 +38,10 @@ create table if not exists empty_id(
 	season_id int not null,
 	primary key ( season_id )
 );
+
+-- 删除恢复的数据
+
+delete from failed
+where season_id in (
+	select season_id from season
+);
