@@ -148,11 +148,19 @@ class Spider_season:
         if total > (group_size * thread_num):
             # 使用多次循环
             loop = total / (group_size * thread_num) + 1
-            self.threads = []
-            self.results = []
-            self.failed = []
-            self.empty = []
-        else if total > group_size:
+            for j in range(loop):
+                for i in range(0, 5):
+                    # TODO 限定上界
+                    t = threading.Thread(
+                            target = my_spider.get_detail,
+                            args = (low + i * group_size + j * group_size * thread_num, group_size, high)) # TODO 基数
+                    t.start()
+                    self.threads.append(t) # 加入线程list
+                for t in self.threads:
+                    t.join()
+                self.threads.clear() # 清空所有线程
+                self.start_commit()
+        elif total > group_size:
             # 使用多线程
             for i in range(0, 5):
                 # TODO 限定上界
@@ -163,8 +171,9 @@ class Spider_season:
                 self.threads.append(t) # 加入线程list
             for t in self.threads:
                 t.join()
+            self.threads.clear() # 清空所有线程
             self.start_commit()
-        else if total > 0:
+        elif total > 0:
             # 使用单线程
             self.get_detail(low, total)
             self.start_commit()
@@ -189,7 +198,7 @@ if __name__ == '__main__':
     group_size = 1000 # 每一个线程抓取的数量
     thread_num = 5 # 线程数量
 
-    for j in range(3, 7):
+    for j in range(7, 11):
         # 清空数据
         threads = []
         my_spider.results = []
