@@ -16,6 +16,9 @@ insert into season (season_id, aid, title, p_year, p_month, p_day, c_year, c_mon
 	values
 	(0, 0, '双方的发生地方''sadfsadfasd', 0, 0, 0, 0, 0, 0);
 
+select season_id, id, title, p_year, c_year from season
+order by p_year;
+
 create table if not exists failed(
 	season_id int not null,
 	aid int not null,
@@ -25,9 +28,9 @@ create table if not exists failed(
 
 insert into failed (season_id, aid)
 	values
-	(3097, ),
-	(3128, ),
-	(1308, ),
-	(3407, ),
-	(2894, ),
-	(1966, );
+	(3097, );
+
+create table if not exists empty(
+	season_id int not null,
+	primary key ( season_id )
+);

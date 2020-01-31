@@ -97,7 +97,7 @@ class Spider_season:
         if self.db == None:
             print("no database")
             return
-        cmd = 'insert into season (season_id, aid, id, title, p_year, p_month, p_day, c_year, c_month, c_day) values' + \
+        cmd = 'insert ignore into season (season_id, aid, id, title, p_year, p_month, p_day, c_year, c_month, c_day) values' + \
                 '({}, {}, {}, \'{}\', {}, {}, {}, {}, {}, {});'
         cmd = cmd.format(
             item['season_id'], 
@@ -135,21 +135,25 @@ if __name__ == '__main__':
 
     threads = []
     group_size = 1000 # 每一个线程抓取的数量
-    for i in range(0, 5):
-        t = threading.Thread(
-                target = my_spider.get_detail,
-                args = (i * group_size, group_size))
-        t.start()
-        threads.append(t) # 加入线程list
-        # 刷新数据库
-    for t in threads:
-        t.join()
-    for item in my_spider.results:
-        my_spider.insert_season(item)
+    for j in range(0, 7):
+        low = j * 5
+        high = low + 5
+        for i in range(low, high):
+            t = threading.Thread(
+                    target = my_spider.get_detail,
+                    args = (i * group_size, group_size))
+            t.start()
+            threads.append(t) # 加入线程list
+            # 刷新数据库
+        for t in threads:
+            t.join()
+        for item in my_spider.results:
+            my_spider.insert_season(item)
 
-    for f in my_spider.failed: # 记录保存失败的数据
-        my_spider.insert_failed(f)
-        print(f)
+        for f in my_spider.failed: # 记录保存失败的数据
+            my_spider.insert_failed(f)
+            print(f)
 
-    my_spider.db.commit()
+        my_spider.db.commit()
+
     my_spider.db.close()
